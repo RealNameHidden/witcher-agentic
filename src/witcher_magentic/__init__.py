@@ -1,0 +1,1 @@
+"""Witcher Magentic application package."""
