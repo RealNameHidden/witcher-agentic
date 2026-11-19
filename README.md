@@ -1,7 +1,13 @@
 # Witcher Magentic
 
-An educational multi-agent application built with Microsoft Agent Framework.
-Originally Magentic's sequential manager loop; now a parallel research workflow.
+A fun, lighthearted Witcher project made to learn and experiment with
+Microsoft Agent Framework. The idea is simple: give a few AI agents their own
+specialties and let them work together to prepare for a monster hunt.
+
+This is a learning playground for agent tools, parallel workflows, model
+integration, and Azure deployment. It started with Magentic's sequential manager
+loop and grew into a parallel research workflow with a dashboard to watch the
+agents work. The Witcher theme gives the experiments a bit of character.
 
 ## How it works
 
@@ -67,6 +73,56 @@ Run the command-line app with:
 
 For Foundry, set `MODEL_PROVIDER=foundry`, `FOUNDRY_PROJECT_ENDPOINT`, and
 `FOUNDRY_MODEL` in `.env`, then authenticate with `az login`.
+
+## How we set it up in Azure
+
+We also deployed the app to Azure to experiment with running the same agents
+against an Azure AI Foundry model instead of local Ollama. The Python app runs
+the agent workflow; Foundry provides the model inference for the manager and
+all three specialists.
+
+1. **Create the hosting resources.** We used [Bicep templates](infra/main.bicep)
+   to create a resource group in East US 2, a Basic Azure Container Registry,
+   and an Azure Container Apps Consumption environment. The registry stores
+   our application image.
+2. **Deploy the Foundry model.** [model.bicep](infra/model.bicep) creates the
+   Azure AI Services account and deploys **GPT-4.1 mini**, version `2025-04-14`,
+   with the deployment name `witcher-mini`. We used GlobalStandard inference,
+   billed by token usage.
+3. **Build and run the container.** The [Dockerfile](Dockerfile) builds the
+   React frontend and packages it with the Python server. We built the image
+   in Azure Container Registry with `az acr build`, then deployed it to
+   Azure Container Apps using [app.bicep](infra/app.bicep) and the
+   [deployment helper](scripts/deploy_app.py). The app serves the UI and API
+   from one container and is configured to scale from zero to one replica.
+4. **Connect the app to Foundry.** The container sets `MODEL_PROVIDER=foundry`,
+   `FOUNDRY_ENDPOINT` to the model account's endpoint, and `FOUNDRY_MODEL=witcher-mini`.
+   The model client calls the account's `/openai/v1/` endpoint. A user-assigned
+   managed identity gets `AcrPull` access to the registry and the
+   `Cognitive Services OpenAI User` role on the model account.
+
+Authentication uses `DefaultAzureCredential` and Microsoft Entra tokens through
+the managed identity. Model key authentication is disabled on the Azure account.
+Live hunts have a separate test access key stored as a Container Apps secret;
+the local copy stays in the ignored `.azure/` directory. The scripted sample
+works without a model call or an access key.
+
+To use a deployed Foundry model from your local checkout, run `az login` with
+an account that has model inference access, then set these values in your local
+`.env` and restart the app:
+
+```dotenv
+MODEL_PROVIDER=foundry
+FOUNDRY_ENDPOINT=https://YOUR-MODEL-ACCOUNT.cognitiveservices.azure.com
+FOUNDRY_MODEL=witcher-mini
+```
+
+Use your own deployment name if it differs. This direct inference setup uses
+`FOUNDRY_ENDPOINT`; the project endpoint option above is an alternative client
+path. See the [Azure deployment notes](infra/README.md) for the deployment
+commands, validation steps, and recorded test results. The templates and helper
+currently reflect our test resource names and subscription; adapt them for your
+own Azure account before deploying.
 
 ## Agent observatory UI
 
