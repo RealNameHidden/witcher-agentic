@@ -1,4 +1,4 @@
-# Witcher Magentic
+# Witcher Agentic
 
 A fun, lighthearted Witcher project I built to learn and experiment with
 Microsoft Agent Framework. The idea: give AI agents their own specialties and
