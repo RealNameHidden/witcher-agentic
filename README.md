@@ -74,23 +74,23 @@ Run the command-line app with:
 For Foundry, set `MODEL_PROVIDER=foundry`, `FOUNDRY_PROJECT_ENDPOINT`, and
 `FOUNDRY_MODEL` in `.env`, then authenticate with `az login`.
 
-## How we set it up in Azure
+## How I set it up in Azure
 
-We also deployed the app to Azure to experiment with running the same agents
+I also deployed the app to Azure to experiment with running the same agents
 against an Azure AI Foundry model instead of local Ollama. The Python app runs
 the agent workflow; Foundry provides the model inference for the manager and
 all three specialists.
 
-1. **Create the hosting resources.** We used [Bicep templates](infra/main.bicep)
+1. **Create the hosting resources.** I used [Bicep templates](infra/main.bicep)
    to create a resource group in East US 2, a Basic Azure Container Registry,
    and an Azure Container Apps Consumption environment. The registry stores
-   our application image.
+   my application image.
 2. **Deploy the Foundry model.** [model.bicep](infra/model.bicep) creates the
    Azure AI Services account and deploys **GPT-4.1 mini**, version `2025-04-14`,
-   with the deployment name `witcher-mini`. We used GlobalStandard inference,
+   with the deployment name `witcher-mini`. I used GlobalStandard inference,
    billed by token usage.
 3. **Build and run the container.** The [Dockerfile](Dockerfile) builds the
-   React frontend and packages it with the Python server. We built the image
+   React frontend and packages it with the Python server. I built the image
    in Azure Container Registry with `az acr build`, then deployed it to
    Azure Container Apps using [app.bicep](infra/app.bicep) and the
    [deployment helper](scripts/deploy_app.py). The app serves the UI and API
@@ -121,7 +121,7 @@ Use your own deployment name if it differs. This direct inference setup uses
 `FOUNDRY_ENDPOINT`; the project endpoint option above is an alternative client
 path. See the [Azure deployment notes](infra/README.md) for the deployment
 commands, validation steps, and recorded test results. The templates and helper
-currently reflect our test resource names and subscription; adapt them for your
+currently reflect my test resource names and subscription; adapt them for your
 own Azure account before deploying.
 
 ## Agent observatory UI
